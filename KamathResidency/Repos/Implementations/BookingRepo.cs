@@ -4,6 +4,7 @@ using KamathResidency.DTO;
 using KamathResidency.Infrastructure;
 using KamathResidency.Repos.Interfaces;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace KamathResidency.Repos.Implementations;
@@ -57,5 +58,45 @@ public class BookingRepo : IBookingRepo
         }
 
         return roomBookingList;
+    }
+
+    public async Task<Booking> AddBooking(BookingsDto details)
+    {
+        Booking bookingData = new Booking();
+        bookingData.Id = Guid.NewGuid();
+        bookingData.RoomNo = details.RoomNo;
+        bookingData.UserId = details.UserId;
+        bookingData.CheckIn = details.CheckIn;
+        bookingData.CheckOut = details.CheckOut;
+        bookingData.TotalBill = details.TotalBill;
+        bookingData.AdvanceAmount = details.AdvanceAmount;
+        _context.Bookings.Add(bookingData);
+
+        await _context.SaveChangesAsync();
+        return bookingData;
+    }
+
+    public async Task<Booking> UpdateBooking(Guid bId, BookingsDto updatedData)
+    {
+        var data = await _context.Bookings.Where(b => b.Id == bId).FirstOrDefaultAsync();
+        if (data == null)
+        {
+            throw new Exception("No booking details found.");
+        }
+
+        data.RoomNo = updatedData.RoomNo;
+        data.CheckOut = updatedData.CheckOut;
+        data.TotalBill = updatedData.TotalBill;
+        data.AdvanceAmount = updatedData.AdvanceAmount;
+        _context.Bookings.Update(data);
+        _context.SaveChanges();
+        return data;
+
+    }
+
+    public async Task<Booking> GetBookingDetailsById(Guid bId)
+    {
+        var bookigData = await _context.Bookings.Where(b => b.Id == bId).FirstOrDefaultAsync();
+        return bookigData;
     }
 }

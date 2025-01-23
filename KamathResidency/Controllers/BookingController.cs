@@ -1,4 +1,5 @@
 using KamathResidency.DTO;
+using KamathResidency.Infrastructure;
 using KamathResidency.Repos.Implementations;
 using KamathResidency.Repos.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +18,34 @@ namespace KamathResidency.Controllers
         {
             _bookingRepo = bookingReop;
         }
+
         [HttpGet]
         public async Task<ActionResult<List<RoomBookingsDto>>> GetAllBooking(DateTime fromDate, DateTime toDate)
         {
             var bookimgData = await _bookingRepo.GetAllRoomBookings(fromDate, toDate);
             return Ok(bookimgData);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<Booking>> AddBooking(BookingsDto details)
+        {
+            var booking = await _bookingRepo.AddBooking(details);
+            return Created(booking.Id.ToString(), booking);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Booking>> UpdateBooking([FromRoute] Guid id, [FromBody] BookingsDto details)
+        {
+            var booking = await _bookingRepo.UpdateBooking(id, details);
+            return Ok(booking);
+        }
+        [HttpGet]
+        public async Task<ActionResult<Booking>> GetBookingDetailsById(Guid bookingId)
+        {
+            var data = await _bookingRepo.GetBookingDetailsById(bookingId);
+            return Ok(data);
+        }
     }
+
+
 }
