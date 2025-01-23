@@ -5,25 +5,23 @@ namespace KamathResidency.Infrastructure;
 
 public partial class Booking
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
+    public byte[] CreatedAt { get; set; } = null!;
 
-    public DateTime? ModifiedAt { get; set; }
+    public byte[]? ModifiedAt { get; set; }
 
-    public long RoomNo { get; set; }
+    public string UserId { get; set; } = null!;
 
-    public Guid UserId { get; set; }
+    public byte[] CheckIn { get; set; } = null!;
 
-    public DateTime CheckIn { get; set; }
-
-    public DateTime CheckOut { get; set; }
+    public byte[] CheckOut { get; set; } = null!;
 
     public double TotalBill { get; set; }
 
     public double? AdvanceAmount { get; set; }
 
-    public virtual Room RoomNoNavigation { get; set; } = null!;
-
     public virtual User User { get; set; } = null!;
+
+    public virtual ICollection<Room> Rooms { get; } = new List<Room>();
 }

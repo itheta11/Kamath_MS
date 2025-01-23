@@ -5,15 +5,15 @@ namespace KamathResidency.Infrastructure;
 
 public partial class User
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
+    public byte[] CreatedAt { get; set; } = null!;
 
     public string Name { get; set; } = null!;
 
     public string Address { get; set; } = null!;
 
-    public decimal? PhoneNumber { get; set; }
+    public byte[]? PhoneNumber { get; set; }
 
     public string IdProof { get; set; } = null!;
 

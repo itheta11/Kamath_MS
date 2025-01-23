@@ -21,7 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<KamathDbContext>(options => options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<KamahResidencyContext>(options => options.UseSqlite(config.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IBookingRepo, BookingRepo>();
 
 var app = builder.Build();
@@ -40,7 +40,3 @@ app.MapControllers();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

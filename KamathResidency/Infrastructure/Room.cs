@@ -7,13 +7,13 @@ public partial class Room
 {
     public long Id { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public byte[] CreatedAt { get; set; } = null!;
 
-    public int? Floor { get; set; }
+    public long? Floor { get; set; }
 
     public string? RoomType { get; set; }
 
-    public bool? IsAc { get; set; }
+    public byte[]? IsAc { get; set; }
 
     public virtual ICollection<Booking> Bookings { get; } = new List<Booking>();
 }
