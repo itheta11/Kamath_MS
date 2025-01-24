@@ -20,17 +20,17 @@ namespace KamathResidency.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<RoomBookingsDto>>> GetAllBooking(DateTime fromDate, DateTime toDate)
+        public async Task<ActionResult<List<BookingsDto>>> GetAllBooking(DateTime? fromDate, DateTime? toDate)
         {
             var bookimgData = await _bookingRepo.GetAllRoomBookings(fromDate, toDate);
             return Ok(bookimgData);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Booking>> AddBooking(BookingsDto details)
+        public async Task<ActionResult<Booking>> AddBooking(CreateBookingsDto details)
         {
             var booking = await _bookingRepo.AddBooking(details);
-            return Created(booking.Id.ToString(), booking);
+            return CreatedAtAction(nameof(GetBookingDetailsById), new { id = booking.Id.ToString() }, booking);
         }
 
         [HttpPut("{id}")]

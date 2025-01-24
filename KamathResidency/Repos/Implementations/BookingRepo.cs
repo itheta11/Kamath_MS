@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.Design;
+using System.Runtime.CompilerServices;
 using KamathResidency.DTO;
 using KamathResidency.Infrastructure;
 using KamathResidency.Repos.Interfaces;
@@ -17,63 +18,79 @@ public class BookingRepo : IBookingRepo
     {
         _context = context;
     }
-    public async Task<List<RoomBookingsDto>> GetAllRoomBookings(DateTime fromDate, DateTime toDate)
+    public async Task<List<BookingsDto>> GetAllRoomBookings(DateTime? fromDate, DateTime? toDate)
     {
-        // var data = await (from r in _context.Rooms
-        //                   join b in _context.Bookings on r.Id equals b.RoomNo
-        //                   where b.CheckIn >= fromDate && b.CheckIn <= toDate
-        //                   select new
-        //                   {
-        //                       RoomId = r.Id,
-        //                       RoomType = r.RoomType,
-        //                       IsAc = r.IsAc,
-        //                       bookingId = b.Id,
-        //                       checkin = b.CheckIn,
-        //                       Checkout = b.CheckOut
-        //                   }).ToListAsync();
-        // List<RoomBookingsDto> roomBookingList = new List<RoomBookingsDto>();
+        var query = _context.Bookings
+            .Include(b => b.User)
+            .Include(b => b.Rooms)
+            .AsQueryable();
 
-        // foreach (var item in data)
-        // {
-        //     BookingsDto bookingData = new BookingsDto();
-        //     bookingData.BookingId = item.bookingId;
-        //     bookingData.CheckIn = item.checkin;
-        //     bookingData.CheckOut = item.Checkout;
-        //     var room = roomBookingList.Where(x => x.RoomId == item.RoomId).FirstOrDefault();
-        //     if (room == null)
-        //     {
-        //         RoomBookingsDto roomData = new RoomBookingsDto();
-        //         roomData.RoomId = item.RoomId;
-        //         roomData.RoomType = item.RoomType;
-        //         roomData.IsAc = item.IsAc;
-        //         roomData.Bookings = new List<BookingsDto>();
-        //         roomData.Bookings.Add(bookingData);
-        //         roomBookingList.Add(roomData);
-        //     }
-        //     else
-        //     {
-        //         room.Bookings.Add(bookingData);
-        //     }
+        if (fromDate.HasValue && toDate.HasValue)
+        {
+            query = query.Where(b =>
+                (b.CheckIn >= fromDate && b.CheckIn <= toDate) ||
+                (b.CheckOut >= fromDate && b.CheckOut <= toDate) ||
+                (b.CheckIn <= fromDate && b.CheckOut >= toDate));
+        }
 
-        // }
+        var bookings = await query.ToListAsync();
 
-        return null;
+        var bookingDetails = bookings.Select(b => new BookingsDto
+        {
+            Id = new Guid(b.Id),
+            CreatedAt = b.CreatedAt,
+            ModifiedAt = b.ModifiedAt,
+            CheckIn = b.CheckIn,
+            CheckOut = b.CheckOut,
+            TotalBill = b.TotalBill,
+            AdvanceAmount = b.AdvanceAmount,
+            User = new UsersDto
+            {
+                Id = new Guid(b.User.Id),
+                Name = b.User.Name,
+                Address = b.User.Address,
+                PhoneNumber = b.User.PhoneNumber,
+                IdProof = b.User.IdProof
+            },
+            Rooms = b.Rooms.Select(r => new RoomDto
+            {
+                Id = r.Id,
+                Floor = r.Floor,
+                RoomType = r.RoomType,
+                IsAc = r.IsAc
+            }).ToList()
+        }).ToList();
+
+
+        return bookingDetails;
     }
 
-    public async Task<Booking> AddBooking(BookingsDto details)
+    public async Task<Booking> AddBooking(CreateBookingsDto details)
     {
-        // Booking bookingData = new Booking();
-        // bookingData.Id = Guid.NewGuid();
-        // bookingData.RoomNo = details.RoomNo;
-        // bookingData.UserId = details.UserId;
-        // bookingData.CheckIn = details.CheckIn;
-        // bookingData.CheckOut = details.CheckOut;
-        // bookingData.TotalBill = details.TotalBill;
-        // bookingData.AdvanceAmount = details.AdvanceAmount;
-        // _context.Bookings.Add(bookingData);
+        var overlappingBookings = await _context.Bookings
+    .Include(b => b.Rooms) // Include the associated rooms
+    .Where(b =>
+        b.CheckIn < details.CheckOut && b.CheckOut > details.CheckIn &&
+        b.Rooms.Any(r => details.RoomIds.Contains(r.Id)))
+    .ToListAsync();
 
-        // await _context.SaveChangesAsync();
-        return null;
+        if (overlappingBookings.Any())
+        {
+            throw new Exception("One or more rooms are already booked during the given date range.");
+        }
+
+
+        Booking bookingData = new Booking();
+        bookingData.Id = Guid.NewGuid().ToString();
+        bookingData.UserId = details.UserId;
+        bookingData.CheckIn = details.CheckIn;
+        bookingData.CheckOut = details.CheckOut;
+        bookingData.TotalBill = details.TotalBill;
+        bookingData.AdvanceAmount = details.AdvanceAmount;
+        bookingData.Rooms = await _context.Rooms.Where(r => details.RoomIds.Contains(r.Id)).ToListAsync();
+        _context.Bookings.Add(bookingData);
+        await _context.SaveChangesAsync();
+        return bookingData;
     }
 
     public async Task<Booking> UpdateBooking(Guid bId, BookingsDto updatedData)

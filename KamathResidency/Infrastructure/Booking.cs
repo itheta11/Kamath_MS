@@ -15,5 +15,5 @@ public partial class Booking
     public double TotalBill { get; set; }
     public double? AdvanceAmount { get; set; }
 
-    public ICollection<Room> Rooms { get; set; }
+    public List<Room> Rooms { get; set; }
 }
