@@ -5,17 +5,12 @@ namespace KamathResidency.Infrastructure;
 
 public partial class User
 {
-    public string Id { get; set; } = null!;
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string Name { get; set; }
+    public string Address { get; set; }
+    public decimal? PhoneNumber { get; set; }
+    public string IdProof { get; set; }
 
-    public byte[] CreatedAt { get; set; } = null!;
-
-    public string Name { get; set; } = null!;
-
-    public string Address { get; set; } = null!;
-
-    public byte[]? PhoneNumber { get; set; }
-
-    public string IdProof { get; set; } = null!;
-
-    public virtual ICollection<Booking> Bookings { get; } = new List<Booking>();
+    public ICollection<Booking>? Bookings { get; set; }
 }

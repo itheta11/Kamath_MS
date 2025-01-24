@@ -39,10 +39,10 @@ namespace KamathResidency.Controllers
             var booking = await _bookingRepo.UpdateBooking(id, details);
             return Ok(booking);
         }
-        [HttpGet]
-        public async Task<ActionResult<Booking>> GetBookingDetailsById(Guid bookingId)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Booking>> GetBookingDetailsById([FromRoute] Guid id)
         {
-            var data = await _bookingRepo.GetBookingDetailsById(bookingId);
+            var data = await _bookingRepo.GetBookingDetailsById(id);
             return Ok(data);
         }
     }
