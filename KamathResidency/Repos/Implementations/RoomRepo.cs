@@ -45,6 +45,7 @@ public class RoomRepo : IRoomRepo
     {
         var room = new Room
         {
+            Id = roomDto.Id,
             Floor = roomDto.Floor,
             RoomType = roomDto.RoomType,
             IsAc = roomDto.IsAc,

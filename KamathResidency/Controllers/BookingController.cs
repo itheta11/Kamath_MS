@@ -20,7 +20,7 @@ namespace KamathResidency.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<BookingsDto>>> GetAllBooking(DateTime fromDate, DateTime toDate)
+        public async Task<ActionResult<List<BookingsDto>>> GetAllBooking(DateTime? fromDate, DateTime? toDate)
         {
             var bookimgData = await _bookingRepo.GetAllRoomBookings(fromDate, toDate);
             return Ok(bookimgData);
@@ -39,10 +39,10 @@ namespace KamathResidency.Controllers
             var booking = await _bookingRepo.UpdateBooking(id, details);
             return Ok(booking);
         }
-        [HttpGet]
-        public async Task<ActionResult<Booking>> GetBookingDetailsById(Guid bookingId)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Booking>> GetBookingDetailsById(Guid id)
         {
-            var data = await _bookingRepo.GetBookingDetailsById(bookingId);
+            var data = await _bookingRepo.GetBookingDetailsById(id);
             return Ok(data);
         }
     }

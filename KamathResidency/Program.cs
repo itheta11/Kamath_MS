@@ -24,10 +24,16 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<HotelDbContext>(options => options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IBookingRepo, BookingRepo>();
 builder.Services.AddScoped<IRoomRepo, RoomRepo>();
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
 app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -40,7 +46,3 @@ app.MapControllers();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
