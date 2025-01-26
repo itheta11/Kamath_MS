@@ -4,21 +4,24 @@ namespace KamathResidency.DTO;
 
 public class BookingsDto
 {
-    public Guid BookingId { get; set; }
-
+    public Guid Id { get; set; }
     public DateTime CreatedAt { get; set; }
-
     public DateTime? ModifiedAt { get; set; }
-
-    public long RoomNo { get; set; }
-
-    public Guid UserId { get; set; }
-
     public DateTime CheckIn { get; set; }
-
     public DateTime CheckOut { get; set; }
-
     public double TotalBill { get; set; }
-
     public double? AdvanceAmount { get; set; }
+    public UserDto User { get; set; }
+    public List<RoomDto> Rooms { get; set; }
+}
+
+
+public class CreateBookingsDto
+{
+    public Guid UserId { get; set; }
+    public DateTime CheckIn { get; set; }
+    public DateTime CheckOut { get; set; }
+    public double TotalBill { get; set; }
+    public double? AdvanceAmount { get; set; }
+    public List<long> RoomIds { get; set; }
 }

@@ -4,22 +4,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KamathResidency.Infrastructure;
 
-public partial class KamathDbContext : DbContext
+public partial class HotelDbContext : DbContext
 {
-    public KamathDbContext()
+    public HotelDbContext()
     {
     }
 
-    public KamathDbContext(DbContextOptions<KamathDbContext> options)
+    public HotelDbContext(DbContextOptions<HotelDbContext> options)
         : base(options)
     {
     }
 
     public virtual DbSet<Booking> Bookings { get; set; }
 
+    public virtual DbSet<BookingRoomAssociation> BookingRoomAssociations { get; set; }
+
     public virtual DbSet<Room> Rooms { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("User Id=postgres.oxmkbjhlsxjwcgzcjxxg;Password=KamathLodge123;Server=aws-0-ap-south-1.pooler.supabase.com;Port=5432;Database=postgres");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,19 +70,38 @@ public partial class KamathDbContext : DbContext
                 .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("modified_at");
-            entity.Property(e => e.RoomNo).HasColumnName("room_no");
             entity.Property(e => e.TotalBill).HasColumnName("total_bill");
             entity.Property(e => e.UserId).HasColumnName("user_id");
-
-            entity.HasOne(d => d.RoomNoNavigation).WithMany(p => p.Bookings)
-                .HasForeignKey(d => d.RoomNo)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Booking_room_no_fkey");
 
             entity.HasOne(d => d.User).WithMany(p => p.Bookings)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Booking_user_id_fkey");
+        });
+
+        modelBuilder.Entity<BookingRoomAssociation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Booking_Room_Association_pkey");
+
+            entity.ToTable("Booking_Room_Association");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.BookingId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("booking_id");
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
+
+            entity.HasOne(d => d.Booking).WithMany(p => p.BookingRoomAssociations)
+                .HasForeignKey(d => d.BookingId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Booking_Room_Association_booking_id_fkey");
+
+            entity.HasOne(d => d.Room).WithMany(p => p.BookingRoomAssociations)
+                .HasForeignKey(d => d.RoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Booking_Room_Association_room_id_fkey");
         });
 
         modelBuilder.Entity<Room>(entity =>
@@ -86,6 +111,9 @@ public partial class KamathDbContext : DbContext
             entity.ToTable("Room");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.BasePrice)
+                .HasDefaultValueSql("'0'::bigint")
+                .HasColumnName("base_price");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");

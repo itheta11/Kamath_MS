@@ -21,9 +21,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<KamathDbContext>(options => options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<HotelDbContext>(options => options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IBookingRepo, BookingRepo>();
-
+builder.Services.AddScoped<IRoomRepo, RoomRepo>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

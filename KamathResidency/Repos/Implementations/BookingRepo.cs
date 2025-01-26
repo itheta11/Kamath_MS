@@ -12,85 +12,110 @@ namespace KamathResidency.Repos.Implementations;
 public class BookingRepo : IBookingRepo
 {
 
-    private readonly KamathDbContext _context;
-    public BookingRepo(KamathDbContext context)
+    private readonly HotelDbContext _context;
+    public BookingRepo(HotelDbContext context)
     {
         _context = context;
     }
-    public async Task<List<RoomBookingsDto>> GetAllRoomBookings(DateTime fromDate, DateTime toDate)
+    public async Task<List<BookingsDto>> GetAllRoomBookings(DateTime? fromDate, DateTime? toDate)
     {
-        var data = await (from r in _context.Rooms
-                          join b in _context.Bookings on r.Id equals b.RoomNo
-                          where b.CheckIn >= fromDate && b.CheckIn <= toDate
-                          select new
-                          {
-                              RoomId = r.Id,
-                              RoomType = r.RoomType,
-                              IsAc = r.IsAc,
-                              bookingId = b.Id,
-                              checkin = b.CheckIn,
-                              Checkout = b.CheckOut
-                          }).ToListAsync();
-        List<RoomBookingsDto> roomBookingList = new List<RoomBookingsDto>();
+        var query = _context.Bookings
+                    .Include(b => b.User)
+                    .Include(b => b.BookingRoomAssociations)
+                        .ThenInclude(ba => ba.Room)
+                    .AsQueryable();
 
-        foreach (var item in data)
+        if (fromDate.HasValue && toDate.HasValue)
         {
-            BookingsDto bookingData = new BookingsDto();
-            bookingData.BookingId = item.bookingId;
-            bookingData.CheckIn = item.checkin;
-            bookingData.CheckOut = item.Checkout;
-            var room = roomBookingList.Where(x => x.RoomId == item.RoomId).FirstOrDefault();
-            if (room == null)
-            {
-                RoomBookingsDto roomData = new RoomBookingsDto();
-                roomData.RoomId = item.RoomId;
-                roomData.RoomType = item.RoomType;
-                roomData.IsAc = item.IsAc;
-                roomData.Bookings = new List<BookingsDto>();
-                roomData.Bookings.Add(bookingData);
-                roomBookingList.Add(roomData);
-            }
-            else
-            {
-                room.Bookings.Add(bookingData);
-            }
-
+            query = query.Where(b =>
+                (b.CheckIn >= fromDate && b.CheckIn <= toDate) ||
+                (b.CheckOut >= fromDate && b.CheckOut <= toDate) ||
+                (b.CheckIn <= fromDate && b.CheckOut >= toDate));
         }
 
-        return roomBookingList;
+        var bookings = await query.ToListAsync();
+
+        var bookingDetails = bookings.Select(b => new BookingsDto
+        {
+            Id = b.Id,
+            CreatedAt = b.CreatedAt,
+            ModifiedAt = b.ModifiedAt,
+            CheckIn = b.CheckIn,
+            CheckOut = b.CheckOut,
+            TotalBill = b.TotalBill,
+            AdvanceAmount = b.AdvanceAmount,
+            User = new UserDto
+            {
+                Id = b.User.Id,
+                Name = b.User.Name,
+                Address = b.User.Address,
+                PhoneNumber = b.User.PhoneNumber,
+                IdProof = b.User.IdProof
+            },
+            Rooms = b.BookingRoomAssociations.Select(r => new RoomDto
+            {
+                Id = r.Room.Id,
+                Floor = r.Room.Floor,
+                RoomType = r.Room?.RoomType,
+                IsAc = r.Room?.IsAc
+            }).ToList()
+        }).ToList();
+
+
+        return bookingDetails;
     }
 
-    public async Task<Booking> AddBooking(BookingsDto details)
+    public async Task<Booking> AddBooking(CreateBookingsDto details)
     {
+        var unavailableRooms = await _context.BookingRoomAssociations
+        .Include(ba => ba.Booking)
+        .Where(ba =>
+            details.RoomIds.Contains(ba.RoomId) &&
+            (ba.Booking.CheckIn <= details.CheckOut && ba.Booking.CheckOut >= details.CheckIn))
+        .Select(ba => ba.RoomId)
+        .ToListAsync();
+
+        if (unavailableRooms.Any())
+        {
+            throw new Exception("Some rooms are not available during the selected dates");
+        }
         Booking bookingData = new Booking();
         bookingData.Id = Guid.NewGuid();
-        bookingData.RoomNo = details.RoomNo;
         bookingData.UserId = details.UserId;
         bookingData.CheckIn = details.CheckIn;
         bookingData.CheckOut = details.CheckOut;
         bookingData.TotalBill = details.TotalBill;
         bookingData.AdvanceAmount = details.AdvanceAmount;
+        bookingData.CreatedAt = DateTime.Now;
         _context.Bookings.Add(bookingData);
 
+        var bookingRoomAssociations = details.RoomIds.Select(roomId => new BookingRoomAssociation
+        {
+            Id = Guid.NewGuid(),
+            BookingId = bookingData.Id,
+            RoomId = roomId
+        }).ToList();
+
+        _context.BookingRoomAssociations.AddRange(bookingRoomAssociations);
         await _context.SaveChangesAsync();
         return bookingData;
     }
 
     public async Task<Booking> UpdateBooking(Guid bId, BookingsDto updatedData)
     {
-        var data = await _context.Bookings.Where(b => b.Id == bId).FirstOrDefaultAsync();
-        if (data == null)
-        {
-            throw new Exception("No booking details found.");
-        }
+        // var data = await _context.Bookings.Where(b => b.Id == bId).FirstOrDefaultAsync();
+        // if (data == null)
+        // {
+        //     throw new Exception("No booking details found.");
+        // }
 
-        data.RoomNo = updatedData.RoomNo;
-        data.CheckOut = updatedData.CheckOut;
-        data.TotalBill = updatedData.TotalBill;
-        data.AdvanceAmount = updatedData.AdvanceAmount;
-        _context.Bookings.Update(data);
-        _context.SaveChanges();
-        return data;
+        // data.RoomNo = updatedData.RoomNo;
+        // data.CheckOut = updatedData.CheckOut;
+        // data.TotalBill = updatedData.TotalBill;
+        // data.AdvanceAmount = updatedData.AdvanceAmount;
+        // _context.Bookings.Update(data);
+        // _context.SaveChanges();
+        return null;
 
     }
 

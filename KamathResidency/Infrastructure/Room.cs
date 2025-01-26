@@ -15,5 +15,7 @@ public partial class Room
 
     public bool? IsAc { get; set; }
 
-    public virtual ICollection<Booking> Bookings { get; } = new List<Booking>();
+    public long BasePrice { get; set; }
+
+    public virtual ICollection<BookingRoomAssociation> BookingRoomAssociations { get; } = new List<BookingRoomAssociation>();
 }

@@ -11,8 +11,6 @@ public partial class Booking
 
     public DateTime? ModifiedAt { get; set; }
 
-    public long RoomNo { get; set; }
-
     public Guid UserId { get; set; }
 
     public DateTime CheckIn { get; set; }
@@ -23,7 +21,7 @@ public partial class Booking
 
     public double? AdvanceAmount { get; set; }
 
-    public virtual Room RoomNoNavigation { get; set; } = null!;
+    public virtual ICollection<BookingRoomAssociation> BookingRoomAssociations { get; } = new List<BookingRoomAssociation>();
 
     public virtual User User { get; set; } = null!;
 }
