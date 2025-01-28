@@ -19,6 +19,20 @@ config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        var allowedOrigins = config.GetSection("AllowedOrigins").Get<string[]>();
+        builder.WithOrigins(allowedOrigins)
+            .SetIsOriginAllowedToAllowWildcardSubdomains()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+        ;
+    });
+});
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<HotelDbContext>(options => options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
