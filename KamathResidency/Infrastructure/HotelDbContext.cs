@@ -64,10 +64,9 @@ public partial class HotelDbContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("check_out");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.ModifiedAt)
-                .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("modified_at");
             entity.Property(e => e.TotalBill).HasColumnName("total_bill");
@@ -115,7 +114,7 @@ public partial class HotelDbContext : DbContext
                 .HasDefaultValueSql("'0'::bigint")
                 .HasColumnName("base_price");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.Floor).HasColumnName("floor");
             entity.Property(e => e.IsAc).HasColumnName("is_ac");
@@ -137,7 +136,7 @@ public partial class HotelDbContext : DbContext
                 .HasColumnType("character varying")
                 .HasColumnName("address");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.IdProof)
                 .HasColumnType("character varying")

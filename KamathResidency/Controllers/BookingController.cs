@@ -30,7 +30,7 @@ namespace KamathResidency.Controllers
         public async Task<ActionResult<Booking>> AddBooking(CreateBookingsDto details)
         {
             var booking = await _bookingRepo.AddBooking(details);
-            return Created(booking.Id.ToString(), booking);
+            return CreatedAtAction(nameof(GetBookingDetailsById), new { id = booking.Id.ToString() }, booking);
         }
 
         [HttpPut("{id}")]

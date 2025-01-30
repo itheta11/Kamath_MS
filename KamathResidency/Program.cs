@@ -1,3 +1,4 @@
+using AutoMapper;
 using KamathResidency.Infrastructure;
 using KamathResidency.Repos.Implementations;
 using KamathResidency.Repos.Interfaces;
@@ -37,6 +38,7 @@ builder.Services.AddDbContext<HotelDbContext>(options => options.UseNpgsql(confi
 builder.Services.AddScoped<IBookingRepo, BookingRepo>();
 builder.Services.AddScoped<IRoomRepo, RoomRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.Design;
+using AutoMapper;
 using KamathResidency.DTO;
 using KamathResidency.Infrastructure;
 using KamathResidency.Repos.Interfaces;
@@ -13,9 +14,11 @@ public class BookingRepo : IBookingRepo
 {
 
     private readonly HotelDbContext _context;
-    public BookingRepo(HotelDbContext context)
+    private readonly IMapper _mapper;
+    public BookingRepo(HotelDbContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
     public async Task<List<BookingsDto>> GetAllRoomBookings(DateTime? fromDate, DateTime? toDate)
     {
@@ -65,7 +68,7 @@ public class BookingRepo : IBookingRepo
         return bookingDetails;
     }
 
-    public async Task<Booking> AddBooking(CreateBookingsDto details)
+    public async Task<BookingsDto> AddBooking(CreateBookingsDto details)
     {
         var unavailableRooms = await _context.BookingRoomAssociations
         .Include(ba => ba.Booking)
@@ -98,7 +101,8 @@ public class BookingRepo : IBookingRepo
 
         _context.BookingRoomAssociations.AddRange(bookingRoomAssociations);
         await _context.SaveChangesAsync();
-        return bookingData;
+        var booking = _mapper.Map<BookingsDto>(bookingData);
+        return booking;
     }
 
     public async Task<Booking> UpdateBooking(Guid bId, BookingsDto updatedData)
