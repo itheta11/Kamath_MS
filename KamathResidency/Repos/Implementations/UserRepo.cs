@@ -80,7 +80,6 @@ public class UserRepo : IUserRepo
             throw new Exception("User not found");
         }
 
-        user.Name = userDto.Name;
         user.Address = userDto.Address;
         user.PhoneNumber = userDto.PhoneNumber;
         user.IdProof = userDto.IdProof;
