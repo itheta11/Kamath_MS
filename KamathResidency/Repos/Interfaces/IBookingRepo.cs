@@ -9,8 +9,8 @@ public interface IBookingRepo
 {
     Task<List<BookingsDto>> GetAllRoomBookings(DateTime? fromDate, DateTime? toDate);
     Task<BookingsDto> AddBooking(CreateBookingsDto details);
-    Task<Booking> UpdateBooking(Guid bId, BookingsDto updatedData);
-    Task<Booking> GetBookingDetailsById(Guid BId);
+    Task UpdateBooking(Guid bId, CreateBookingsDto updatedData);
+    Task<BookingsDto> GetBookingDetailsById(Guid bId);
 
 
 }

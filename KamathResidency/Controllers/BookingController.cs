@@ -34,13 +34,13 @@ namespace KamathResidency.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Booking>> UpdateBooking([FromRoute] Guid id, [FromBody] BookingsDto details)
+        public async Task<ActionResult<Booking>> UpdateBooking([FromRoute] Guid id, [FromBody] CreateBookingsDto details)
         {
-            var booking = await _bookingRepo.UpdateBooking(id, details);
-            return Ok(booking);
+            await _bookingRepo.UpdateBooking(id, details);
+            return NoContent();
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<Booking>> GetBookingDetailsById(Guid id)
+        public async Task<ActionResult<BookingsDto>> GetBookingDetailsById(Guid id)
         {
             var data = await _bookingRepo.GetBookingDetailsById(id);
             return Ok(data);

@@ -105,27 +105,75 @@ public class BookingRepo : IBookingRepo
         return booking;
     }
 
-    public async Task<Booking> UpdateBooking(Guid bId, BookingsDto updatedData)
+    public async Task UpdateBooking(Guid bId, CreateBookingsDto updatedData)
     {
-        // var data = await _context.Bookings.Where(b => b.Id == bId).FirstOrDefaultAsync();
-        // if (data == null)
-        // {
-        //     throw new Exception("No booking details found.");
-        // }
+        var data = await _context.Bookings
+                   .Where(x => x.Id == bId)
+                   .Include(b => b.BookingRoomAssociations)
+                       .ThenInclude(ba => ba.Room)
+                   .FirstOrDefaultAsync();
+        if (data == null)
+        {
+            throw new Exception("No booking details found.");
+        }
+        data.CheckIn = updatedData.CheckIn;
+        data.CheckOut = updatedData.CheckOut;
+        data.TotalBill = updatedData.TotalBill;
+        data.AdvanceAmount = updatedData.AdvanceAmount;
+        _context.Bookings.Update(data);
 
-        // data.RoomNo = updatedData.RoomNo;
-        // data.CheckOut = updatedData.CheckOut;
-        // data.TotalBill = updatedData.TotalBill;
-        // data.AdvanceAmount = updatedData.AdvanceAmount;
-        // _context.Bookings.Update(data);
-        // _context.SaveChanges();
-        return null;
+        var bookingRoomAssociations = updatedData.RoomIds.Select(roomId => new BookingRoomAssociation
+        {
+            Id = Guid.NewGuid(),
+            BookingId = data.Id,
+            RoomId = roomId
+        }).ToList();
 
+        _context.BookingRoomAssociations.RemoveRange(data.BookingRoomAssociations);
+        _context.BookingRoomAssociations.AddRange(bookingRoomAssociations);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<Booking> GetBookingDetailsById(Guid bId)
+    public async Task<BookingsDto> GetBookingDetailsById(Guid bId)
     {
-        var bookigData = await _context.Bookings.Where(b => b.Id == bId).FirstOrDefaultAsync();
-        return bookigData;
+        var booking = await _context.Bookings
+                    .Where(x => x.Id == bId)
+                    .Include(b => b.User)
+                    .Include(b => b.BookingRoomAssociations)
+                        .ThenInclude(ba => ba.Room)
+                    .FirstOrDefaultAsync();
+
+        if (booking == null)
+        {
+            throw new Exception("Booking not found");
+        }
+
+        BookingsDto response = new BookingsDto
+        {
+            Id = booking.Id,
+            CreatedAt = booking.CreatedAt,
+            ModifiedAt = booking.ModifiedAt,
+            CheckIn = booking.CheckIn,
+            CheckOut = booking.CheckOut,
+            TotalBill = booking.TotalBill,
+            AdvanceAmount = booking.AdvanceAmount,
+            User = new UserDto
+            {
+                Id = booking.User.Id,
+                Name = booking.User.Name,
+                Address = booking.User.Address,
+                PhoneNumber = booking.User.PhoneNumber,
+                IdProof = booking.User.IdProof
+            },
+            Rooms = booking.BookingRoomAssociations.Select(r => new RoomDto
+            {
+                Id = r.Room.Id,
+                Floor = r.Room.Floor,
+                RoomType = r.Room?.RoomType,
+                IsAc = r.Room?.IsAc
+            }).ToList()
+        };
+
+        return response;
     }
 }
