@@ -11,6 +11,6 @@ public interface IBookingRepo
     Task<BookingsDto> AddBooking(CreateBookingsDto details);
     Task UpdateBooking(Guid bId, CreateBookingsDto updatedData);
     Task<BookingsDto> GetBookingDetailsById(Guid bId);
-
+    Task PartialBookingUpdate(Guid id, PartialBookingUpdateApi updatedBooking);
 
 }

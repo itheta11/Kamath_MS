@@ -45,6 +45,14 @@ namespace KamathResidency.Controllers
             var data = await _bookingRepo.GetBookingDetailsById(id);
             return Ok(data);
         }
+
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<Booking>> PatchBookingPartial([FromRoute] Guid id, [FromBody] PartialBookingUpdateApi details)
+        {
+            await _bookingRepo.PartialBookingUpdate(id, details);
+            return NoContent();
+        }
     }
 
 

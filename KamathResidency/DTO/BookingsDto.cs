@@ -25,3 +25,12 @@ public class CreateBookingsDto
     public double? AdvanceAmount { get; set; }
     public List<long> RoomIds { get; set; }
 }
+
+public class PartialBookingUpdateApi
+{
+    public DateTime? CheckIn { get; set; }
+    public DateTime? CheckOut { get; set; }
+    public List<long>? AddedRoomIds { get; set; }
+    public List<long>? DeletedRoomIds { get; set; }
+
+}

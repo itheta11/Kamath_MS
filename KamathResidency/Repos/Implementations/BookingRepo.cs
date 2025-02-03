@@ -176,4 +176,60 @@ public class BookingRepo : IBookingRepo
 
         return response;
     }
+
+    public async Task PartialBookingUpdate(Guid id, PartialBookingUpdateApi updatedBooking)
+    {
+        var transaction = _context.Database.BeginTransaction();
+        try
+        {
+            if (updatedBooking.CheckIn != null && updatedBooking.CheckOut != null)
+            {
+
+                await _context.Bookings
+                .Where(b => b.Id == id)
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(booking => booking.CheckIn, b => updatedBooking.CheckIn)
+                    .SetProperty(booking => booking.CheckIn, b => updatedBooking.CheckIn))
+                ;
+                await _context.SaveChangesAsync();
+            }
+
+            /// remove bookings
+            if (updatedBooking.DeletedRoomIds != null && updatedBooking.DeletedRoomIds.Count > 0)
+            {
+
+                await _context.BookingRoomAssociations.
+                Where(ba => ba.BookingId == id && updatedBooking.DeletedRoomIds.Contains(ba.RoomId))
+                .ExecuteDeleteAsync();
+                await _context.SaveChangesAsync();
+
+            }
+
+            if (updatedBooking.DeletedRoomIds != null && updatedBooking.DeletedRoomIds.Count > 0)
+            {
+                List<BookingRoomAssociation> newBookingAssos = new List<BookingRoomAssociation>();
+                foreach (var roomId in updatedBooking.AddedRoomIds)
+                {
+                    BookingRoomAssociation bookingRoomAssociation = new BookingRoomAssociation()
+                    {
+                        Id = Guid.NewGuid(),
+                        BookingId = id,
+                        RoomId = roomId
+                    };
+                    newBookingAssos.Add(bookingRoomAssociation);
+                }
+                await _context.BookingRoomAssociations.AddRangeAsync(newBookingAssos);
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+        }
+
+
+
+    }
 }
